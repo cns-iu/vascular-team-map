@@ -41,7 +41,7 @@ for csvFile in IN_CSVs:
     authors[tuple(record)]+=1
 
 with open(OUT_CSV, 'w') as outStream:
-  out = writer(outStream)
+  out = writer(outStream, lineterminator='\n')
   out.writerow(('first', 'middle', 'last', 'email'))
   for record in sorted(authors, key=lambda x: x[2]):
     out.writerow(record)
