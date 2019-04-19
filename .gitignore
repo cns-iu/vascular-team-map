@@ -105,3 +105,6 @@ venv.bak/
 
 # SONAR
 .sonarlint
+
+# PostgreSQL
+db-config.sh
