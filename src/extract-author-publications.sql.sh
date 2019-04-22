@@ -44,6 +44,11 @@ psql << EOF
       FROM wos_summary_names AS S, email_authors AS A
       WHERE S.id = A.id AND S.name_id = A.name_id AND display_name IS NOT NULL
     ),
+    wos_standard_for_search AS (
+      SELECT DISTINCT wos_standard
+      FROM wos_summary_names AS S, email_authors AS A
+      WHERE S.id = A.id AND S.name_id = A.name_id AND wos_standard IS NOT NULL
+    ),
 
     dais_authors AS (
       SELECT S.id, S.name_id, 'dais-via-email'::text as matched_by
@@ -64,6 +69,11 @@ psql << EOF
       SELECT S.id, S.name_id, 'display-name-via-email'::text as matched_by
       FROM wos_summary_names AS S, display_name_for_search AS A
       WHERE S.display_name = A.display_name
+    ),
+    wos_standard_authors AS (
+      SELECT S.id, S.name_id, 'wos-standard-via-email'::text as matched_by
+      FROM wos_summary_names AS S, wos_standard_for_search AS A
+      WHERE S.wos_standard = A.wos_standard
     )
     SELECT id, array_to_string(array_agg(matched_by), '|') AS matched_by
     FROM (
@@ -74,8 +84,10 @@ psql << EOF
       SELECT id, matched_by FROM orcid_authors
       UNION
       SELECT id, matched_by FROM researcherid_authors
+      -- UNION
+      -- SELECT id, matched_by FROM display_name_authors
       UNION
-      SELECT id, matched_by FROM display_name_authors
+      SELECT id, matched_by FROM wos_standard_authors
     ) AS A
     GROUP BY id
   );
@@ -127,12 +139,12 @@ psql << EOF
       GROUP BY S.id
     ),
     titles AS ( 
-      SELECT A.id, T.title AS titles
+      SELECT A.id, T.title
       FROM wos_titles AS T, matched_author_publications AS A
       WHERE T.id = A.id AND T.title_type = 'item' 
     ), 
-    affiliations AS ( 
-      SELECT A.id, array_to_string(array_agg(O.organization), '|') AS affiliated 
+    organizations AS ( 
+      SELECT A.id, array_to_string(array_agg(O.organization), '|') AS organizations 
       FROM wos_address_organizations AS O, matched_author_publications AS A 
       WHERE O.id = A.id AND O.org_id = 1
       GROUP BY A.id
@@ -140,26 +152,40 @@ psql << EOF
     journals AS (
       SELECT A.id, T.title AS journal
       FROM wos_titles AS T, matched_author_publications AS A
-      WHERE title_type='source' AND T.id = A.id
+      WHERE T.id = A.id AND title_type='source'
     ),
     issn AS (
-      SELECT A.id, identifier_value AS issns 
+      SELECT A.id, identifier_value AS issn
       FROM wos_dynamic_identifiers AS I, matched_author_publications AS A
-      WHERE identifier_type='issn' AND I.id = A.id
+      WHERE I.id = A.id AND identifier_type='issn'
     ),
     eissn AS (
-      SELECT A.id, identifier_value AS eissns
+      SELECT A.id, identifier_value AS eissn
       FROM wos_dynamic_identifiers AS I, matched_author_publications AS A
-      WHERE identifier_type='eissn' AND I.id = A.id
+      WHERE I.id = A.id AND identifier_type='eissn'
+    ),
+    pubyear as (
+      SELECT A.id, S.pubyear as publication_year
+      FROM wos_summary AS S, matched_author_publications AS A
+      WHERE S.id = A.id
+    ),
+    times_cited as (
+      SELECT A.id, S.wos_total as times_cited
+      FROM wos_times_cited AS S, matched_author_publications AS A
+      WHERE S.id = A.id
     )
-    SELECT DISTINCT A.id, 
-      wos_summary.pubyear, titles.titles, authors.author, affiliations.affiliated, 
-      wos_times_cited.wos_total AS times_cited, journals.journal, issn.issns, eissn.eissns
-    FROM matched_author_publications AS A,
-      wos_summary, titles, authors, affiliations, wos_times_cited, journals, issn, eissn
-    WHERE titles.id = A.id AND authors.id = A.id AND titles.id = A.id AND 
-      affiliations.id = A.id AND journals.id = A.id AND issn.id = A.id AND 
-      eissn.id = A.id AND wos_times_cited.id = A.id AND wos_summary.id = A.id;
+    SELECT 
+      A.id, publication_year, title, author, organizations, times_cited, journal, issn, eissn
+    FROM
+      matched_author_publications AS A 
+      LEFT JOIN pubyear ON (pubyear.id = A.id)
+      LEFT JOIN titles ON (titles.id = A.id)
+      LEFT JOIN authors ON (authors.id = A.id)
+      LEFT JOIN organizations ON (organizations.id = A.id)
+      LEFT JOIN times_cited ON (times_cited.id = A.id)
+      LEFT JOIN journals ON (journals.id = A.id)
+      LEFT JOIN issn ON (issn.id = A.id)
+      LEFT JOIN eissn ON (eissn.id = A.id);
 
   \COPY ( SELECT * FROM author_publications_export ) TO '${2}' Delimiter ',' CSV HEADER Encoding 'SQL-ASCII'
 
