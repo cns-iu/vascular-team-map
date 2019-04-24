@@ -42,6 +42,6 @@ for csvFile in IN_CSVs:
 
 with open(OUT_CSV, 'w') as outStream:
   out = writer(outStream, lineterminator='\n')
-  out.writerow(('first', 'middle', 'last', 'email'))
-  for record in sorted(authors, key=lambda x: x[2]):
-    out.writerow(record)
+  out.writerow(('author_id', 'first', 'middle', 'last', 'email'))
+  for aid, record in enumerate(sorted(authors, key=lambda x: x[2]), 1):
+    out.writerow(tuple([aid])+record)
