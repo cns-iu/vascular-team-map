@@ -11,7 +11,7 @@ psql << EOF
 
   CREATE TABLE $s.matched_email_author_publications AS
     SELECT DISTINCT K.id, K.name_id, A.author_id, 'email'::text AS matched_by
-    FROM wos_summary_names_email_addr AS K, authors_for_search AS A
+    FROM wos_summary_names_email_addr AS K, $s.authors_for_search AS A
     WHERE lower(K.email_addr) = lower(A.email_address);
 
   CREATE UNIQUE INDEX ON $s.matched_email_author_publications(id, name_id, author_id);
