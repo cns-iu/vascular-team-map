@@ -7,6 +7,6 @@ echo
 for f in scripts/??-*.sh
 do
   echo Running $f...
-  bash $f
+  time bash $f
   echo
 done
