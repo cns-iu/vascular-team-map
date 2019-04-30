@@ -20,8 +20,8 @@ psql << EOF
       A.id, A.author_id, source_authors, publication_year, title, authors, organizations, times_cited, journal, issn, eissn
     FROM
       $s.matched_author_publications AS A 
-      LEFT JOIN source_authors AS S ON (S.id = A.id)
-      LEFT JOIN wosx_publication_export AS P ON (P.id = A.id);
+      INNER JOIN source_authors AS S ON (S.id = A.id)
+      INNER JOIN wosx_publication_export AS P ON (P.id = A.id);
 
   CREATE INDEX ON $s.author_publications_export(author_id);
   CREATE INDEX ON $s.author_publications_export(id);

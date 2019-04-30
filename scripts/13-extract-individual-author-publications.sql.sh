@@ -15,7 +15,8 @@ psql << EOF
   CREATE TEMPORARY VIEW author_export AS
     SELECT id, source_authors, publication_year, title, authors, organizations, times_cited, journal, issn, eissn
     FROM $s.author_publications_export
-    WHERE author_id = '${author_id}';
+    WHERE author_id = '${author_id}'
+    ORDER BY publication_year DESC;
 
   \COPY (SELECT * FROM author_export) TO '${dir}/${author_id}-${name}-publications.csv' Delimiter ',' CSV HEADER Encoding 'SQL-ASCII'
 
