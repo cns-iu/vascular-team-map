@@ -21,7 +21,7 @@ psql << EOF
     FROM
       $s.matched_author_publications AS A 
       INNER JOIN source_authors AS S ON (S.id = A.id)
-      INNER JOIN wosx_publication_export AS P ON (P.id = A.id);
+      INNER JOIN wosx_publications_export AS P ON (P.id = A.id);
 
   CREATE INDEX ON $s.author_publications_export(author_id);
   CREATE INDEX ON $s.author_publications_export(id);
