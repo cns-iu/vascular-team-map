@@ -11,11 +11,10 @@ FOR_SCIMAP="${OUT}/vascular-pubs.for-sci2-scimap.csv"
 COOC_PROPS="${OUT}/vascular-pubs.coauth.properties"
 
 # Merge all CSV files into a single CSV file and do some file cleanup for ease of loading into Sci2
-head -1 $ORIG/author-data/'Zorina Galis  5-15-19.csv' | perl -CSD -pe 's/^\x{feff}//' > $OUT_PUBS
-find $ORIG/author-data -name '*.csv' -exec tail -n +2 {} \; | tr -d '\000' >> $OUT_PUBS
+python3 src/merge-publications.py $ORIG/author-data $OUT_PUBS
 
 # Keep only Cites and Authors columns for even easier loading into Sci2 for coauthor
-csvcut -x -e utf-8 -c 1,2 $OUT_PUBS | perl -pe 's/\,\ /\|/g;s/\ \.\.\.//g;s/\|\.\.\.//g;s/…//g;' > $FOR_COAUTH
+csvcut -x -e utf-8 -c Cites,Authors $OUT_PUBS | perl -pe 's/\,\ /\|/g;s/\ \.\.\.//g;s/\|\.\.\.//g;s/…//g;' > $FOR_COAUTH
 
 # Keep only pubs whic have at least one citation
 grep -v -P '^0,' $FOR_COAUTH > $FOR_COAUTH_SHRINK
