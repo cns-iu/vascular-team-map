@@ -5,7 +5,8 @@ set -ev
 mkdir -p $OUT
 
 OUT_PUBS="${OUT}/vascular-pubs.csv"
-FOR_SCI2="${OUT}/vascular-pubs.for-sci2-coauth.csv"
+FOR_COAUTH="${OUT}/vascular-pubs.for-sci2-coauth.csv"
+FOR_COAUTH_SHRINK="${OUT}/vascular-pubs.for-sci2-coauth-with-cites.csv"
 FOR_SCIMAP="${OUT}/vascular-pubs.for-sci2-scimap.csv"
 COOC_PROPS="${OUT}/vascular-pubs.coauth.properties"
 
@@ -14,7 +15,10 @@ head -1 $ORIG/author-data/'Zorina Galis  5-15-19.csv' | perl -CSD -pe 's/^\x{fef
 find $ORIG/author-data -name '*.csv' -exec tail -n +2 {} \; | tr -d '\000' >> $OUT_PUBS
 
 # Keep only Cites and Authors columns for even easier loading into Sci2 for coauthor
-csvcut -x -e utf-8 -c 1,2 $OUT_PUBS | perl -pe 's/\,\ /\|/g;s/\ \.\.\.//g;s/\|\.\.\.//g;s/…//g;' > $FOR_SCI2
+csvcut -x -e utf-8 -c 1,2 $OUT_PUBS | perl -pe 's/\,\ /\|/g;s/\ \.\.\.//g;s/\|\.\.\.//g;s/…//g;' > $FOR_COAUTH
+
+# Keep only pubs whic have at least one citation
+grep -v -P '^0,' $FOR_COAUTH > $FOR_COAUTH_SHRINK
 
 # Generate a .properties file for using Sci2's co-occurance network generator
 cat > $COOC_PROPS << EOF
