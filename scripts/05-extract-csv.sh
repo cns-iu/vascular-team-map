@@ -32,4 +32,4 @@ edge.maxYear = Year.max
 EOF
 
 # Keep only Source and Publisher columns for even easier loading into Sci2 for science mapping
-csvcut -e utf-8 -c Source,Publisher $OUT_PUBS > $FOR_SCIMAP
+csvcut -e utf-8 -c Source,Publisher,Year $OUT_PUBS > $FOR_SCIMAP
