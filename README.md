@@ -8,6 +8,7 @@ A map of NAVBO team members and their evolution. This repository includes code t
 * python 3.6+
 * [Sci2](https://sci2.cns.iu.edu/) v1.3
 * [GEPHI](https://gephi.org/) (optional)
+* sqlite3
 
 ## Running the workflow
 
