@@ -33,6 +33,9 @@ combined = altair.vconcat(authorCount, numCites)
 authorCount.save(join(OUT_DIR, 'AuthorCount.distribution.png'), webdriver='firefox')
 numCites.save(join(OUT_DIR, 'Cites.distribution.png'), webdriver='firefox')
 
+authorCount.save(join(OUT_DIR, 'AuthorCount.distribution.svg'), webdriver='firefox')
+numCites.save(join(OUT_DIR, 'Cites.distribution.svg'), webdriver='firefox')
+
 # altair.Chart(data).mark_area(
 #   opacity=0.5
 # ).encode(
